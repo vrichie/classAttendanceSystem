@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Staff {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  firstName String    @db.VarChar(50)
+  lastName  String    @db.VarChar(50)
+  email     String    @db.VarChar(100)
+  staffNo   String    @unique
+  password  String    @db.VarChar(250)
+  role      String    @db.VarChar(20)
+  lecturer  Lecturer?
+  admin     Admin?
+  Course    Course[]
+}
+
+model Lecturer {
+  id         Int      @id @default(autoincrement())
+  staffNo    String   @unique
+  faculty    String
+  department String
+  approved   Boolean
+  unit       String
+  staff      Staff    @relation(fields: [staffNo], references: [staffNo], map: "staff")
+  courses    Course[]
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  staffNo  String @unique
+  staff    Staff  @relation(fields: [staffNo], references: [staffNo])
+}
+
+model Student {
+  id                 Int               @id @default(autoincrement())
+  registrationNumber String            @unique
+  firstName          String            @db.VarChar(50)
+  lastName           String            @db.VarChar(50)
+  email              String            @db.VarChar(100)
+  year               Int
+  approved           Boolean
+  password           String            @db.VarChar(250)
+  createdOn          DateTime          @default(now())
+  updatedOn          DateTime          @updatedAt
+  registeredUnits    RegisteredUnits[]
+}
+
+model Course {
+  id           Int       @id @default(autoincrement())
+  yearSemester String
+  unit         Int
+  updated      DateTime  @updatedAt
+  lecturer     Staff     @relation(fields: [staffNo], references: [staffNo], map: "lecturer")
+  staffNo      String
+  Lecturer     Lecturer? @relation(fields: [lecturerId], references: [id])
+  lecturerId   Int?
+}
+
+model RegisteredUnits {
+  id                 Int     @id @default(autoincrement())
+  unit               Int
+  student            Student @relation(fields: [registrationNumber], references: [registrationNumber], map: "student")
+  registrationNumber String
+}
